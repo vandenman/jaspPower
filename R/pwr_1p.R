@@ -252,43 +252,31 @@
   d <- abs(2 * (asin(sqrt(p1)) - asin(sqrt(p0))))
   d <- round(d, 3)
 
-  n_text <- gettextf("sample sizes of %1$s", n)
-
-  if (alt == "two.sided") {
-    tail_text <- gettext("two-sided")
-    alt_text <- "<i>|h|\u003E</i>"
-    crit_text <- gettext("criteria")
-  } else {
-    tail_text <- gettext("one-sided")
-    alt_text <- "<i>|h|\u003E</i>"
-    crit_text <- gettext("criterion")
-  }
-
-  if (calc == "power") {
-    pwr_string <- gettextf("have power of at least %1$s", round(power, 3))
-  } else {
-    pwr_string <- gettextf("only be sufficiently sensitive (power >%1$s)", round(power, 3))
-  }
-
   p50 <- try(.pwrPTest(n = n, p0 = p0, sig.level = alpha, power = .5, alternative = alt)$p)
-  if (jaspBase::isTryError(p50)) {
+  if (jaspBase::isTryError(p50))
     return()
-  }
+
   d50 <- abs(2 * (asin(sqrt(p50)) - asin(sqrt(p0))))
+
+  firstSentence <- gettext("The power curve above shows how the sensitivity of the test and design is larger for larger effect sizes.")
+
+  secondSentence <- if (calc == "power")
+      gettextf("If we obtained sample sizes of %1$s our test and design would have power of at least %2$s to detect effect sizes of %3$s%4$s.",
+               n, round(power, 3), "<i>|h|\u003E</i>", d)
+  else
+    gettextf("If we obtained sample sizes of %1$s our test and design would only be sufficiently sensitive (power > %2$s) to detect effect sizes of %3$s%4$s.",
+             n, round(power, 3), "<i>|h|\u003E</i>", d)
+
+  thirdSentence <- gettextf("We would be more than likely to miss (power less than 50%%) effect sizes less than <i>|h|=</i>%.3f.", d50)
 
   str <- paste(
     "<p>",
-    gettextf(
-      "The power curve above shows how the sensitivity of the test and design is larger for larger effect sizes. If we obtained %1$s our test and design would %2$s to effect sizes of %3$s%4$s.",
-      n_text, pwr_string, alt_text, d
-    ),
+    firstSentence,
+    secondSentence,
     "</p>",
     "<p>",
-    gettextf(
-      "We would be more than likely to miss (power less than 50%%) effect sizes less than %1$s%2$s.",
-      "<i>|h|=</i>", round(d50, 3)
-    ),
-    "</p>"
+    thirdSentence,
+    "</p>",
   )
 
   html[["text"]] <- str
@@ -313,24 +301,11 @@
   power <- ifelse(calc == "power", r$power, lst$pow)
   alt <- lst$alt
 
-  n_text <- gettextf("sample sizes of at least %1$s", n)
-
-
-  if (alt == "two.sided") {
-    tail_text <- gettext("two-sided")
-    alt_text <- "<i>|h|\u003E</i>0,"
-    crit_text <- gettext("criteria")
-  } else {
-    tail_text <- gettext("one-sided")
-    alt_text <- "<i>|h|\u003E</i>0,"
-    crit_text <- gettext("criterion")
-  }
-
   str <- paste(
     "<p>",
     gettextf(
-      "The power curve above shows how the sensitivity of the test and design is larger for larger effect sizes. In order for our test and design to have sufficient sensitivity (power > %1$s) to detect that %2$s when the effect size is %3$s or larger, we would need %4$s.",
-      round(power, 3), alt_text, d, n_text
+      "The power curve above shows how the sensitivity of the test and design is larger for larger effect sizes. In order for our test and design to have sufficient sensitivity (power > %1$s) to detect that %2$s when the effect size is %3$s or larger, we would need sample sizes of at least %4$s.",
+      round(power, 3), "<i>|h|\u003E</i>0,", d, n
     ),
     "</p>"
   )
@@ -364,55 +339,38 @@
     )
   )
 
-  n_text <- gettextf("a sample size of %1$s", n)
+  firstParagraph <- gettextf(
+    "The figure above shows two sampling distributions: the sampling distribution of the <i>estimated</i> effect size when <i>h=</i>0 (left), and when <i>|h|=</i>%4$s (right). Both assume a sample size of %2$s.",
+    d, n
+  )
 
-  if (alt == "two.sided") {
-    tail_text <- gettext("two-sided")
-    null_text <- "<i>h=</i>0,"
-    alt_text <- "<i>|h|\u2265</i>"
-    crit_text <- gettext("criteria")
+  alphaText <- paste0("<i>\u03B1=</i>", alpha)
+  secondParagraph <- if (alt == "two.sided") {
+    nullText  <- "<i>h=</i>0,"
+    gettextf(
+      "The vertical dashed lines show the criteria we would set for a two-sided test with %1$s. When the observed effect size is far enough away from 0 to be more extreme than the criteria we say we 'reject' the null hypothesis. If the null hypothesis were true and %2$s the evidence would lead us to wrongly reject the null hypothesis at most %3$s%% of the time.",
+      alphaText, nullText, 100 * alpha
+    )
   } else {
-    tail_text <- gettext("one-sided")
-    null_text <- "<i>h\u2264</i>0,"
-    alt_text <- "<i>|h|\u2265</i>"
-    crit_text <- gettext("criterion")
+    nullText <- "<i>h\u2264</i>0,"
+    gettextf(
+      "The vertical dashed lines show the criterion we would set for a one-sided test with %1$s. When the observed effect size is far enough away from 0 to be more extreme than the criterion we say we 'reject' the null hypothesis. If the null hypothesis were true and %2$s the evidence would lead us to wrongly reject the null hypothesis at most %3$s%% of the time.",
+      alphaText, nullText, 100 * alpha
+    )
   }
+
+  thirdParagraph <- gettextf(
+    "On the other hand, if %1$s%2$s, the evidence would exceed the criterion  &mdash; and hence we would correctly claim that %3$s &mdash; at least %4$s%% of the time. The design's power for detecting effects of %1$s%2$s is thus %5$s.",
+    "<i>|h|\u2265</i>", d, "<i>|h|></i>0", 100 * round(power, 3), round(power, 3)
+  )
 
   str <- paste(
     "<p>",
-    gettextf(
-      "The figure above shows two sampling distributions: the sampling distribution of the %1$s effect size when %2$s (left), and when %3$s%4$s (right).",
-      paste0("<i>", gettext("estimated"), "</i>"), "<i>h=</i>0", "<i>|h|=</i>", d
-    ),
-    gettextf(
-      "Both assume %1$s.",
-      n_text
-    ),
-    "</p><p>",
-    gettextf(
-      "The vertical dashed lines show the %1$s we would set for a %2$s test with %3$s.",
-      crit_text, tail_text, paste0("<i>\u03B1=</i>", alpha)
-    ),
-    gettextf(
-      "When the observed effect size is far enough away from 0 to be more extreme than the %1$s we say we 'reject' the null hypothesis.",
-      crit_text
-    ),
-    gettextf(
-      "If the null hypothesis were true and %1$s the evidence would lead us to wrongly reject the null hypothesis at most %2$s%% of the time.",
-      null_text, 100 * alpha
-    ),
-    "</p><p>",
-    gettextf(
-      "On the other hand, if %1$s%2$s, the evidence would exceed the criterion  &mdash; and hence we would correctly claim that %3$s &mdash; at least %4$s%% of the time.",
-      "<i>|h|\u2265</i>", d, "<i>|h|></i>0", 100 * round(power, 3)
-    ),
-    gettextf(
-      "The design's power for detecting effects of %1$s%2$s is thus %3$s.",
-      alt_text, d, round(power, 3)
-    ),
+    firstParagraph,  "</p><p>",
+    secondParagraph, "</p><p>",
+    thirdParagraph,
     "</p>"
   )
-
 
   html[["text"]] <- str
 }
@@ -448,12 +406,9 @@
     if (power_rounded == 1) {
       power_rounded <- ">0.999"
     }
-    table$addFootnote(paste(
-      gettext("Due to the rounding of the sample size, the actual power can deviate from the target power."),
-      "<b>",
-      gettext("Actual power:"),
-      power_rounded,
-      "</b>"
+    table$addFootnote(gettext(
+      "Due to the rounding of the sample size, the actual power can deviate from the target power. <b>Actual power: %s</b>",
+      power_rounded
     ))
   }
 }
@@ -477,38 +432,50 @@
   alpha <- ifelse(calc == "alpha", r$alpha, lst$alpha)
   alt <- lst$alt
 
-  n_text <- gettextf("a sample size of %s", n)
-
-  tail_text <- ifelse(alt == "two.sided",
-    gettext("two-sided"),
-    gettext("one-sided")
-  )
-
-  if (calc == "sampleSize") {
-    str <- gettextf(
-      "We would need %1$s to reliably (with probability greater than or equal to %2$s) detect an effect size of %3$s%4$s, assuming a %5$s criterion for detection that allows for a maximum Type I error rate of %6$s.",
-      n_text, power, "<i>|h|\u2265</i>", round(d, 3), tail_text, paste0("<i>\u03B1=</i>", alpha)
-    )
+  str <- if (calc == "sampleSize") {
+    if (alt == "two.sided") {
+      gettextf(
+        "We would need a sample size of %1$s to reliably (with probability greater than or equal to %2$s) detect an effect size of %3$s%4$s, assuming a two-sided criterion for detection that allows for a maximum Type I error rate of %5$s.",
+        n, power, "<i>|h|\u2265</i>", round(d, 3), paste0("<i>\u03B1=</i>", alpha)
+      )
+    } else {
+      gettextf(
+        "We would need a sample size of %1$s to reliably (with probability greater than or equal to %2$s) detect an effect size of %3$s%4$s, assuming a one-sided criterion for detection that allows for a maximum Type I error rate of %5$s.",
+        n, power, "<i>|h|\u2265</i>", round(d, 3), paste0("<i>\u03B1=</i>", alpha)
+      )
+    }
   } else if (calc == "effectSize") {
-    str <- gettextf(
-      "A design with %1$s will reliably (with probability greater than or equal to %2$s) detect  effect sizes of %3$s%4$s, assuming a %5$s criterion for detection that allows for a maximum Type I error rate of %6$s.",
-      n_text, power, "<i>|h|\u2265</i>", round(d, 3), tail_text, paste0("<i>\u03B1=</i>", alpha)
-    )
+    if (alt == "two.sided") {
+      gettextf(
+        "A design with a sample size of %1$s will reliably (with probability greater than or equal to %2$s) detect effect sizes of %3$s%4$s, assuming a two-sided criterion for detection that allows for a maximum Type I error rate of %5$s.",
+        n, power, "<i>|h|\u2265</i>", round(d, 3), paste0("<i>\u03B1=</i>", alpha)
+      )
+    } else {
+      gettextf(
+        "A design with a sample size of %1$s will reliably (with probability greater than or equal to %2$s) detect effect sizes of %3$s%4$s, assuming a one-sided criterion for detection that allows for a maximum Type I error rate of %5$s.",
+        n, power, "<i>|h|\u2265</i>", round(d, 3), paste0("<i>\u03B1=</i>", alpha)
+      )
+    }
   } else if (calc == "power") {
-    str <- gettextf(
-      "A design with %1$s can detect effect sizes of %2$s%3$s with a probability of at least %4$s, assuming a %5$s criterion for detection that allows for a maximum Type I error rate of %6$s.",
-      n_text, "<i>|h|\u2265</i>", round(d, 3), round(power, 3), tail_text, paste0("<i>\u03B1=</i>", alpha)
-    )
+    if (alt == "two.sided") {
+      gettextf(
+        "A design with a sample size of %1$s can detect effect sizes of %2$s%3$s with a probability of at least %4$s, assuming a two-sided criterion for detection that allows for a maximum Type I error rate of %5$s.",
+        n, "<i>|h|\u2265</i>", round(d, 3), round(power, 3), paste0("<i>\u03B1=</i>", alpha)
+      )
+    } else {
+      gettextf(
+        "A design with a sample size of %1$s can detect effect sizes of %2$s%3$s with a probability of at least %4$s, assuming a one-sided criterion for detection that allows for a maximum Type I error rate of %5$s.",
+        n, "<i>|h|\u2265</i>", round(d, 3), round(power, 3), paste0("<i>\u03B1=</i>", alpha)
+      )
+    }
   }
-
-  hypo_text <- "<i>|h|>0</i>"
 
   str <- paste0(
     str,
     "<p>",
     gettextf(
       "To evaluate the design specified in the table, we can consider how sensitive it is to true effects of increasing sizes; that is, are we likely to correctly conclude that %1$s when the effect size is large enough to care about?",
-      hypo_text
+      "<i>|h|>0</i>"
     ),
     "</p>"
   )

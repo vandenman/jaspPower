@@ -47,50 +47,130 @@
 
   html <- jaspResults[["intro"]]
   if (is.null(html)) {
-    html <- createJaspHtml(title = "Introduction")
+    html <- createJaspHtml(title = gettext("Introduction"))
     html$dependOn(c("test", "text"))
     html$position <- 1
     jaspResults[["intro"]] <- html
   }
 
-  str <- gettextf(
-    "The purpose of a %s is to evaluate the sensitivity of a design and test. ",
-    paste0("<i>", gettext("power analysis"), "</i>")
-  )
 
-  test_names <- c(
-    independentSamplesTTest = gettext("an independent samples t-test"),
-    pairedSamplesTTest = gettext("a paired samples t-test"),
-    oneSampleTTest = gettext("a one sample t-test"),
-    oneSampleZTest = gettext("a one sample z-test"),
-    oneSampleProportion = gettext("a one sample proportions test"),
-    twoSamplesProportion = gettext("a two samples proportions test"),
-    oneSampleVarianceRatio = gettext("a one sample variance test"),
-    twoSamplesVarianceRatio = gettext("a two samples variance test"),
-    oneSamplePoisson = gettext("a one sample Poisson rate test"),
-    twoSamplesPoisson = gettext("a two samples Poisson rate test")
-  )
-  test_sentence_end <- paste0(
-    " ", gettext("when using"), " ", "<i>", test_names[[options$test]], "</i>."
-  )
+  str <- gettext("The purpose of a <i>power analysis</i> is to evaluate the sensitivity of a design and test. ")
 
-  mid_sentence <- switch(calc,
-    sampleSize = gettext(
-      "You have chosen to calculate the minimum sample size needed to have an experiment sensitive enough to consistently detect the specified hypothetical effect size"
-    ),
-    effectSize = gettext(
-      "You have chosen to calculate the minimum hypothetical effect size for which the chosen design will have the specified sensitivity"
-    ),
-    power = gettext(
-      "You have chosen to calculate the sensitivity of the chosen design for detecting the specified effect size"
+  # the commented code below creates translatable_object
+  # mid_sentences_en <- c(
+  #   sampleSize = "You have chosen to calculate the minimum sample size needed to have an experiment sensitive enough to consistently detect the specified hypothetical effect size",
+  #   effectSize = "You have chosen to calculate the minimum hypothetical effect size for which the chosen design will have the specified sensitivity",
+  #   power      = "You have chosen to calculate the sensitivity of the chosen design for detecting the specified effect size"
+  # )
+  # test_names_en <- c(
+  #   independentSamplesTTest = "an independent samples t-test",
+  #   pairedSamplesTTest      = "a paired samples t-test",
+  #   oneSampleTTest          = "a one sample t-test",
+  #   oneSampleZTest          = "a one sample z-test",
+  #   oneSampleProportion     = "a one sample proportions test",
+  #   twoSamplesProportion    = "a two samples proportions test",
+  #   oneSampleVarianceRatio  = "a one sample variance test",
+  #   twoSamplesVarianceRatio = "a two samples variance test",
+  #   oneSamplePoisson        = "a one sample Poisson rate test",
+  #   twoSamplesPoisson       = "a two samples Poisson rate test"
+  # )
+  # print_translatable_object <- function() {
+  #   cat("matrix(c(")
+  #   for (i in seq_along(mid_sentences_en)) for (j in seq_along(test_names_en)) {
+  #     if (i != 1 || j != 1)
+  #       cat("  ")
+  #     cat(sprintf("gettext(\"%s when using <i>%s</i>.\")", mid_sentences_en[i], test_names_en[j]))
+  #     if (i != length(mid_sentences_en) || j != length(test_names_en)) {
+  #       cat(",\n")
+  #     } else {
+  #       cat(sprintf("),\n  nrow = %d,\n  ncol = %d,\n  byrow = TRUE,\n  dimnames = list(\n    c(%s),\n    c(%s)\n))",
+  #                   length(mid_sentences_en), length(test_names_en),
+  #                   paste0("\"", names(mid_sentences_en), "\"", collapse = ","),
+  #                   paste0("\"", names(test_names_en),    "\"", collapse = ", ")))
+  #     }
+  #   }
+  # }
+  # print_translatable_object()
+
+  translatable_object <- matrix(c(
+    gettext("You have chosen to calculate the minimum sample size needed to have an experiment sensitive enough to consistently detect the specified hypothetical effect size when using <i>an independent samples t-test</i>."),
+    gettext("You have chosen to calculate the minimum sample size needed to have an experiment sensitive enough to consistently detect the specified hypothetical effect size when using <i>a paired samples t-test</i>."),
+    gettext("You have chosen to calculate the minimum sample size needed to have an experiment sensitive enough to consistently detect the specified hypothetical effect size when using <i>a one sample t-test</i>."),
+    gettext("You have chosen to calculate the minimum sample size needed to have an experiment sensitive enough to consistently detect the specified hypothetical effect size when using <i>a one sample z-test</i>."),
+    gettext("You have chosen to calculate the minimum sample size needed to have an experiment sensitive enough to consistently detect the specified hypothetical effect size when using <i>a one sample proportions test</i>."),
+    gettext("You have chosen to calculate the minimum sample size needed to have an experiment sensitive enough to consistently detect the specified hypothetical effect size when using <i>a two samples proportions test</i>."),
+    gettext("You have chosen to calculate the minimum sample size needed to have an experiment sensitive enough to consistently detect the specified hypothetical effect size when using <i>a one sample variance test</i>."),
+    gettext("You have chosen to calculate the minimum sample size needed to have an experiment sensitive enough to consistently detect the specified hypothetical effect size when using <i>a two samples variance test</i>."),
+    gettext("You have chosen to calculate the minimum sample size needed to have an experiment sensitive enough to consistently detect the specified hypothetical effect size when using <i>a one sample Poisson rate test</i>."),
+    gettext("You have chosen to calculate the minimum sample size needed to have an experiment sensitive enough to consistently detect the specified hypothetical effect size when using <i>a two samples Poisson rate test</i>."),
+    gettext("You have chosen to calculate the minimum hypothetical effect size for which the chosen design will have the specified sensitivity when using <i>an independent samples t-test</i>."),
+    gettext("You have chosen to calculate the minimum hypothetical effect size for which the chosen design will have the specified sensitivity when using <i>a paired samples t-test</i>."),
+    gettext("You have chosen to calculate the minimum hypothetical effect size for which the chosen design will have the specified sensitivity when using <i>a one sample t-test</i>."),
+    gettext("You have chosen to calculate the minimum hypothetical effect size for which the chosen design will have the specified sensitivity when using <i>a one sample z-test</i>."),
+    gettext("You have chosen to calculate the minimum hypothetical effect size for which the chosen design will have the specified sensitivity when using <i>a one sample proportions test</i>."),
+    gettext("You have chosen to calculate the minimum hypothetical effect size for which the chosen design will have the specified sensitivity when using <i>a two samples proportions test</i>."),
+    gettext("You have chosen to calculate the minimum hypothetical effect size for which the chosen design will have the specified sensitivity when using <i>a one sample variance test</i>."),
+    gettext("You have chosen to calculate the minimum hypothetical effect size for which the chosen design will have the specified sensitivity when using <i>a two samples variance test</i>."),
+    gettext("You have chosen to calculate the minimum hypothetical effect size for which the chosen design will have the specified sensitivity when using <i>a one sample Poisson rate test</i>."),
+    gettext("You have chosen to calculate the minimum hypothetical effect size for which the chosen design will have the specified sensitivity when using <i>a two samples Poisson rate test</i>."),
+    gettext("You have chosen to calculate the sensitivity of the chosen design for detecting the specified effect size when using <i>an independent samples t-test</i>."),
+    gettext("You have chosen to calculate the sensitivity of the chosen design for detecting the specified effect size when using <i>a paired samples t-test</i>."),
+    gettext("You have chosen to calculate the sensitivity of the chosen design for detecting the specified effect size when using <i>a one sample t-test</i>."),
+    gettext("You have chosen to calculate the sensitivity of the chosen design for detecting the specified effect size when using <i>a one sample z-test</i>."),
+    gettext("You have chosen to calculate the sensitivity of the chosen design for detecting the specified effect size when using <i>a one sample proportions test</i>."),
+    gettext("You have chosen to calculate the sensitivity of the chosen design for detecting the specified effect size when using <i>a two samples proportions test</i>."),
+    gettext("You have chosen to calculate the sensitivity of the chosen design for detecting the specified effect size when using <i>a one sample variance test</i>."),
+    gettext("You have chosen to calculate the sensitivity of the chosen design for detecting the specified effect size when using <i>a two samples variance test</i>."),
+    gettext("You have chosen to calculate the sensitivity of the chosen design for detecting the specified effect size when using <i>a one sample Poisson rate test</i>."),
+    gettext("You have chosen to calculate the sensitivity of the chosen design for detecting the specified effect size when using <i>a two samples Poisson rate test</i>.")),
+    nrow = 3,
+    ncol = 10,
+    byrow = TRUE,
+    dimnames = list(
+      c("sampleSize","effectSize","power"),
+      c("independentSamplesTTest", "pairedSamplesTTest", "oneSampleTTest", "oneSampleZTest", "oneSampleProportion", "twoSamplesProportion", "oneSampleVarianceRatio", "twoSamplesVarianceRatio", "oneSamplePoisson", "twoSamplesPoisson")
     )
   )
 
-  str <- paste0(
-    str,
-    mid_sentence,
-    test_sentence_end
-  )
+  str2 <- translatable_object[options[["calculation"]], options[["test"]]]
+
+  str <- paste0(str, str2)
+
+  # original approach instead of the big object
+  # cal <- options$calculation
+  # test_names <- c(
+  #   independentSamplesTTest = gettext("an independent samples t-test"),
+  #   pairedSamplesTTest      = gettext("a paired samples t-test"),
+  #   oneSampleTTest          = gettext("a one sample t-test"),
+  #   oneSampleZTest          = gettext("a one sample z-test"),
+  #   oneSampleProportion     = gettext("a one sample proportions test"),
+  #   twoSamplesProportion    = gettext("a two samples proportions test"),
+  #   oneSampleVarianceRatio  = gettext("a one sample variance test"),
+  #   twoSamplesVarianceRatio = gettext("a two samples variance test"),
+  #   oneSamplePoisson        = gettext("a one sample Poisson rate test"),
+  #   twoSamplesPoisson       = gettext("a two samples Poisson rate test")
+  # )
+  # test_sentence_end <- paste0(
+  #   " ", gettext("when using"), " ", "<i>", test_names[[options$test]], "</i>."
+  # )
+  #
+  # mid_sentence <- switch(calc,
+  #   sampleSize = gettext(
+  #     "You have chosen to calculate the minimum sample size needed to have an experiment sensitive enough to consistently detect the specified hypothetical effect size"
+  #   ),
+  #   effectSize = gettext(
+  #     "You have chosen to calculate the minimum hypothetical effect size for which the chosen design will have the specified sensitivity"
+  #   ),
+  #   power = gettext(
+  #     "You have chosen to calculate the sensitivity of the chosen design for detecting the specified effect size"
+  #   )
+  # )
+  #
+  # str <- paste0(
+  #   str,
+  #   mid_sentence,
+  #   test_sentence_end
+  # )
 
   html[["text"]] <- str
 }
@@ -260,7 +340,7 @@
       p_1 <- try(uniroot(function(p) eval(p.body) - power, c(p0, 1 - 1e-10))$root)
       p_2 <- try(uniroot(function(p) eval(p.body) - power, c(1e-10, p0))$root)
       if (jaspBase::isTryError(p_1) && jaspBase::isTryError(p_2)) {
-        stop("no solution found")
+        stop(gettext("no solution found"))
       } else {
         if (jaspBase::isTryError(p_1)) {
           p <- c(NA, p_2)
@@ -276,7 +356,7 @@
   } else if (is.null(sig.level)) {
     sig.level <- uniroot(function(sig.level) eval(p.body) - power, c(1e-10, 1 - 1e-10))$root
   } else {
-    stop("internal error")
+    stop(gettext("internal error"))
   }
   METHOD <- "proportion power calculation for binomial distribution (arcsine transformation)"
   structure(list(
@@ -337,7 +417,7 @@
       p_1 <- try(uniroot(function(p1) eval(p.body) - power, c(p0, 1 - 1e-10))$root)
       p_2 <- try(uniroot(function(p1) eval(p.body) - power, c(1e-10, p0))$root)
       if (jaspBase::isTryError(p_1) && jaspBase::isTryError(p_2)) {
-        stop("no solution found")
+        stop(gettext("no solution found"))
       } else {
         if (jaspBase::isTryError(p_1)) {
           p1 <- c(NA, p_2)
@@ -365,7 +445,7 @@
         power
     }, c(1e-10, 1 - 1e-10))$root
   } else {
-    stop("internal error")
+    stop(gettext("internal error"))
   }
   NOTE <- "different sample sizes"
   METHOD <- "difference of proportion power calculation for binomial distribution (arcsine transformation)"
